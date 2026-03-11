@@ -1,0 +1,43 @@
+body{
+
+margin:0;
+background:linear-gradient(180deg,#020024,#090979,#000000);
+font-family:Arial;
+color:white;
+text-align:center;
+
+}
+
+.game-container{
+
+width:820px;
+margin:auto;
+margin-top:30px;
+
+}
+
+h1{
+
+margin-bottom:10px;
+text-shadow:0 0 10px cyan;
+
+}
+
+canvas{
+
+background:black;
+border:3px solid cyan;
+box-shadow:
+0 0 20px cyan,
+0 0 40px blue inset;
+
+border-radius:10px;
+
+}
+
+.controls{
+
+margin-top:10px;
+opacity:0.8;
+
+}
