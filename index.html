@@ -2,29 +2,41 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Sky Roguelike</title>
+  <title>Sky Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="ui">
-  <div class="panel stats">
+<div id="container">
+  
+  <div id="ui">
     <h2>Пилот</h2>
     <div>❤️ HP: <span id="hp">100</span></div>
     <div>💰 Coins: <span id="coins">0</span></div>
     <div>🔫 Ammo: <span id="ammo">50</span></div>
+
+    <h3>Магазин</h3>
+
+    <div class="shop-item">
+      <button onclick="buy('damage')">Урон</button>
+      <div class="bars" id="damageBar"></div>
+    </div>
+
+    <div class="shop-item">
+      <button onclick="buy('speed')">Скорость</button>
+      <div class="bars" id="speedBar"></div>
+    </div>
+
+    <div class="shop-item">
+      <button onclick="buy('ammo')">Патроны</button>
+      <div class="bars" id="ammoBar"></div>
+    </div>
   </div>
 
-  <div class="panel shop">
-    <h2>Улучшения</h2>
-    <button onclick="buy('damage')">⚡ Урон (+1) - 10</button>
-    <button onclick="buy('speed')">🚀 Скорость (+1) - 10</button>
-    <button onclick="buy('ammo')">📦 Патроны (+20) - 5</button>
-  </div>
+  <canvas id="game"></canvas>
 
-
-<canvas id="game"></canvas>
 </div>
+
 <script src="game.js" defer></script>
 </body>
 </html>
