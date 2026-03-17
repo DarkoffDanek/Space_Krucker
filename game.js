@@ -1,87 +1,168 @@
 const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+canvas.width = 600;
+canvas.height = 800;
+
+let keys = {};
+
+let player = {
+  x: 280,
+  y: 700,
+  w: 40,
+  h: 40,
+  speed: 5,
+  hp: 100,
+  ammo: 50,
+  damage: 1
+};
+
 let bullets = [];
 let enemies = [];
 let coins = 0;
 
-window.addEventListener('keydown', e => keys[e.key] = true);
-window.addEventListener('keyup', e => keys[e.key] = false);
+// управление
+document.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+});
 
-function spawnEnemy(){
-  enemies.push({ x: Math.random()*560, y:-40, w:30, h:30, hp:3 });
-}
-setInterval(spawnEnemy, 1000);
+document.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
 
-function update(){
-  if(keys['ArrowLeft']) player.x -= player.speed;
-  if(keys['ArrowRight']) player.x += player.speed;
-  if(keys['ArrowUp']) player.y -= player.speed;
-  if(keys['ArrowDown']) player.y += player.speed;
+// спавн врагов
+setInterval(() => {
+  enemies.push({
+    x: Math.random() * 560,
+    y: -40,
+    w: 40,
+    h: 40,
+    hp: 3
+  });
+}, 1000);
 
-  if(keys['x'] && player.ammo > 0){
-    bullets.push({ x: player.x+10, y: player.y });
+// обновление
+function update() {
+
+  // движение
+  if (keys['arrowleft']) player.x -= player.speed;
+  if (keys['arrowright']) player.x += player.speed;
+  if (keys['arrowup']) player.y -= player.speed;
+  if (keys['arrowdown']) player.y += player.speed;
+
+  // стрельба
+  if (keys['x'] && player.ammo > 0) {
+    bullets.push({
+      x: player.x + player.w / 2 - 2,
+      y: player.y
+    });
     player.ammo--;
     keys['x'] = false;
   }
 
-  bullets.forEach(b => b.y -= 10);
+  // пули
+  bullets.forEach((b, i) => {
+    b.y -= 10;
+    if (b.y < 0) bullets.splice(i, 1);
+  });
 
-  enemies.forEach(e => e.y += 2);
+  // враги
+  enemies.forEach((e, ei) => {
+    e.y += 2;
 
+    // столкновение с игроком
+    if (
+      e.x < player.x + player.w &&
+      e.x + e.w > player.x &&
+      e.y < player.y + player.h &&
+      e.y + e.h > player.y
+    ) {
+      player.hp -= 10;
+      enemies.splice(ei, 1);
+    }
+
+    // ушёл вниз
+    if (e.y > canvas.height) {
+      player.hp -= 5;
+      enemies.splice(ei, 1);
+    }
+  });
+
+  // попадания
   bullets.forEach((b, bi) => {
     enemies.forEach((e, ei) => {
-      if(b.x < e.x+e.w && b.x+5 > e.x && b.y < e.y+e.h && b.y+10 > e.y){
+      if (
+        b.x < e.x + e.w &&
+        b.x + 5 > e.x &&
+        b.y < e.y + e.h &&
+        b.y + 10 > e.y
+      ) {
         e.hp -= player.damage;
-        bullets.splice(bi,1);
-        if(e.hp <= 0){
-          enemies.splice(ei,1);
+        bullets.splice(bi, 1);
+
+        if (e.hp <= 0) {
+          enemies.splice(ei, 1);
           coins += 5;
         }
       }
     });
   });
 
-  enemies.forEach(e => {
-    if(e.y > canvas.height){
-      player.hp -= 10;
-    }
-  });
+  // обновление UI
+  document.getElementById('hp').textContent = player.hp;
+  document.getElementById('coins').textContent = coins;
+  document.getElementById('ammo').textContent = player.ammo;
 
-  document.getElementById('hp').innerText = player.hp;
-  document.getElementById('coins').innerText = coins;
-  document.getElementById('ammo').innerText = player.ammo;
+  // смерть
+  if (player.hp <= 0) {
+    alert('Ты проиграл!');
+    location.reload();
+  }
 }
 
-function draw(){
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+// отрисовка
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#4da6ff';
+  // игрок
+  ctx.fillStyle = 'cyan';
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
-  ctx.fillStyle = '#ffd54f';
-  bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+  // пули
+  ctx.fillStyle = 'yellow';
+  bullets.forEach(b => {
+    ctx.fillRect(b.x, b.y, 5, 10);
+  });
 
-  ctx.fillStyle = '#ff4d4d';
-  enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
+  // враги
+  ctx.fillStyle = 'red';
+  enemies.forEach(e => {
+    ctx.fillRect(e.x, e.y, e.w, e.h);
+  });
 }
 
-function loop(){
+// цикл
+function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
 }
+
 loop();
 
-function buy(type){
-  if(type === 'damage' && coins >= 10){
+// магазин
+function buy(type) {
+  if (type === 'damage' && coins >= 10) {
     player.damage++;
     coins -= 10;
   }
-  if(type === 'speed' && coins >= 10){
+
+  if (type === 'speed' && coins >= 10) {
     player.speed++;
     coins -= 10;
   }
-  if(type === 'ammo' && coins >= 5){
+
+  if (type === 'ammo' && coins >= 5) {
     player.ammo += 20;
     coins -= 5;
   }
