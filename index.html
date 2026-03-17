@@ -6,23 +6,25 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="ui">
-    <div class="panel stats">
-      <h2>Пилот</h2>
-      <div class="stat">❤️ HP: <span id="hp">100</span></div>
-      <div class="stat">💰 Coins: <span id="coins">0</span></div>
-      <div class="stat">🔫 Ammo: <span id="ammo">50</span></div>
-    </div>
 
-    <div class="panel shop">
-      <h2>Улучшения</h2>
-      <button onclick="buy('damage')">⚡ Урон (+1)<br><span>10 монет</span></button>
-      <button onclick="buy('speed')">🚀 Скорость (+1)<br><span>10 монет</span></button>
-      <button onclick="buy('ammo')">📦 Патроны (+20)<br><span>5 монет</span></button>
-    </div>
+<div id="ui">
+  <div class="panel stats">
+    <h2>Пилот</h2>
+    <div>❤️ HP: <span id="hp">100</span></div>
+    <div>💰 Coins: <span id="coins">0</span></div>
+    <div>🔫 Ammo: <span id="ammo">50</span></div>
   </div>
 
-  <canvas id="game"></canvas>
-  <script src="game.js"></script>
+  <div class="panel shop">
+    <h2>Улучшения</h2>
+    <button onclick="buy('damage')">⚡ Урон (+1) - 10</button>
+    <button onclick="buy('speed')">🚀 Скорость (+1) - 10</button>
+    <button onclick="buy('ammo')">📦 Патроны (+20) - 5</button>
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script src="game.js"></script>
 </body>
 </html>
