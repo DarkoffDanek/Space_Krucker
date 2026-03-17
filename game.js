@@ -1,180 +1,228 @@
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-/* адаптив */
 function resizeCanvas() {
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 }
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-/* игрок */
-let player = {
-  x: 200,
-  y: 400,
-  w: 40,
-  h: 40,
-  speed: 5,
-  hp: 100,
-  ammo: 50,
-  damage: 1
+const keys = {};
+
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+let gameOver = false;
+
+// PLAYER
+const player = {
+    x: 200,
+    y: 400,
+    size: 20,
+    speed: 4,
+    hp: 100,
+    damage: 1,
+    fireRate: 300
 };
 
-let keys = {};
+let coins = 0;
 let bullets = [];
 let enemies = [];
-let coins = 0;
+let effects = [];
 
-/* уровни прокачки */
-let upgrades = {
-  damage: 1,
-  speed: 1,
-  ammo: 1
+let lastShot = 0;
+
+// UPGRADES
+const upgrades = {
+    damage: { level: 0, max: 5 },
+    speed: { level: 0, max: 5 },
+    ammo: { level: 0, max: 5 }
 };
 
-/* управление */
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+function initShop() {
+    document.querySelectorAll(".upgrade").forEach(el => {
+        const type = el.dataset.type;
+        const levelsDiv = el.querySelector(".levels");
 
-/* индикаторы */
-function updateBars() {
-  ["damage","speed","ammo"].forEach(type => {
-    const el = document.getElementById(type + "Bar");
-    el.innerHTML = "";
-
-    for (let i = 0; i < 5; i++) {
-      const d = document.createElement("div");
-      d.className = "bar " + (i < upgrades[type] ? "filled" : "");
-      el.appendChild(d);
-    }
-  });
-}
-updateBars();
-
-/* враги */
-setInterval(() => {
-  enemies.push({
-    x: Math.random() * (canvas.width - 40),
-    y: -40,
-    w: 40,
-    h: 40,
-    hp: 3
-  });
-}, 1000);
-
-/* обновление */
-function update() {
-
-  if (keys["arrowleft"]) player.x -= player.speed;
-  if (keys["arrowright"]) player.x += player.speed;
-  if (keys["arrowup"]) player.y -= player.speed;
-  if (keys["arrowdown"]) player.y += player.speed;
-
-  if (keys["x"] && player.ammo > 0) {
-    bullets.push({ x: player.x + 18, y: player.y });
-    player.ammo--;
-    keys["x"] = false;
-  }
-
-  bullets.forEach((b, i) => {
-    b.y -= 10;
-    if (b.y < 0) bullets.splice(i, 1);
-  });
-
-  enemies.forEach((e, ei) => {
-    e.y += 2;
-
-    if (
-      e.x < player.x + player.w &&
-      e.x + e.w > player.x &&
-      e.y < player.y + player.h &&
-      e.y + e.h > player.y
-    ) {
-      player.hp -= 10;
-      enemies.splice(ei, 1);
-    }
-
-    if (e.y > canvas.height) {
-      enemies.splice(ei, 1);
-      player.hp -= 5;
-    }
-  });
-
-  bullets.forEach((b, bi) => {
-    enemies.forEach((e, ei) => {
-      if (
-        b.x < e.x + e.w &&
-        b.x + 5 > e.x &&
-        b.y < e.y + e.h &&
-        b.y + 10 > e.y
-      ) {
-        e.hp -= player.damage;
-        bullets.splice(bi, 1);
-
-        if (e.hp <= 0) {
-          enemies.splice(ei, 1);
-          coins += 5;
+        for (let i = 0; i < upgrades[type].max; i++) {
+            const box = document.createElement("div");
+            box.classList.add("level");
+            levelsDiv.appendChild(box);
         }
-      }
+
+        el.querySelector("button").onclick = () => buyUpgrade(type);
     });
-  });
+}
+initShop();
 
-  document.getElementById("hp").textContent = player.hp;
-  document.getElementById("coins").textContent = coins;
-  document.getElementById("ammo").textContent = player.ammo;
+function updateShopUI() {
+    document.querySelectorAll(".upgrade").forEach(el => {
+        const type = el.dataset.type;
+        const boxes = el.querySelectorAll(".level");
 
-  if (player.hp <= 0) {
-    alert("Ты проиграл");
-    location.reload();
-  }
+        boxes.forEach((b, i) => {
+            b.classList.toggle("filled", i < upgrades[type].level);
+        });
+    });
+
+    document.getElementById("hp").textContent = player.hp;
+    document.getElementById("coins").textContent = coins;
 }
 
-/* рисование */
+function buyUpgrade(type) {
+    const up = upgrades[type];
+    const cost = (up.level + 1) * 10;
+
+    if (coins >= cost && up.level < up.max) {
+        coins -= cost;
+        up.level++;
+
+        if (type === "damage") player.damage++;
+        if (type === "speed") player.speed += 0.5;
+        if (type === "ammo") player.fireRate -= 40;
+
+        updateShopUI();
+    }
+}
+
+// SHOOT
+function shoot() {
+    const now = Date.now();
+    if (now - lastShot < player.fireRate) return;
+
+    bullets.push({
+        x: player.x,
+        y: player.y,
+        size: 5,
+        speed: 7
+    });
+
+    effects.push({
+        x: player.x,
+        y: player.y,
+        life: 10
+    });
+
+    lastShot = now;
+}
+
+// ENEMIES
+function spawnEnemy() {
+    enemies.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        size: 20,
+        speed: 2 + Math.random() * 2,
+        hp: 2
+    });
+}
+
+setInterval(spawnEnemy, 1000);
+
+// UPDATE
+function update() {
+    if (gameOver) return;
+
+    // MOVE
+    if (keys["ArrowLeft"]) player.x -= player.speed;
+    if (keys["ArrowRight"]) player.x += player.speed;
+    if (keys["ArrowUp"]) player.y -= player.speed;
+    if (keys["ArrowDown"]) player.y += player.speed;
+
+    // SHOOT
+    if (keys["x"] || keys["X"]) shoot();
+
+    // BULLETS
+    bullets.forEach((b, i) => {
+        b.y -= b.speed;
+        if (b.y < 0) bullets.splice(i, 1);
+    });
+
+    // ENEMIES
+    enemies.forEach((e, i) => {
+        e.y += e.speed;
+
+        if (e.y > canvas.height) enemies.splice(i, 1);
+
+        // COLLISION PLAYER
+        if (Math.abs(e.x - player.x) < 20 && Math.abs(e.y - player.y) < 20) {
+            player.hp -= 10;
+            enemies.splice(i, 1);
+
+            if (player.hp <= 0) endGame();
+        }
+    });
+
+    // COLLISION BULLETS
+    bullets.forEach((b, bi) => {
+        enemies.forEach((e, ei) => {
+            if (Math.abs(b.x - e.x) < 15 && Math.abs(b.y - e.y) < 15) {
+                e.hp -= player.damage;
+                bullets.splice(bi, 1);
+
+                effects.push({ x: e.x, y: e.y, life: 10 });
+
+                if (e.hp <= 0) {
+                    coins += 5;
+                    enemies.splice(ei, 1);
+                }
+            }
+        });
+    });
+
+    // EFFECTS
+    effects.forEach((ef, i) => {
+        ef.life--;
+        if (ef.life <= 0) effects.splice(i, 1);
+    });
+
+    updateShopUI();
+}
+
+// DRAW
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "cyan";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+    // PLAYER
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
 
-  ctx.fillStyle = "yellow";
-  bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+    // BULLETS
+    ctx.fillStyle = "#facc15";
+    bullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, 4, 10);
+    });
 
-  ctx.fillStyle = "red";
-  enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
+    // ENEMIES
+    ctx.fillStyle = "#ef4444";
+    enemies.forEach(e => {
+        ctx.fillRect(e.x - 10, e.y - 10, 20, 20);
+    });
+
+    // EFFECTS
+    effects.forEach(ef => {
+        ctx.fillStyle = "white";
+        ctx.globalAlpha = ef.life / 10;
+        ctx.fillRect(ef.x - 5, ef.y - 5, 10, 10);
+        ctx.globalAlpha = 1;
+    });
 }
 
-/* цикл */
+// GAME LOOP
 function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
+    update();
+    draw();
+    requestAnimationFrame(loop);
 }
 loop();
 
-/* магазин */
-window.buy = function(type) {
-  if (type === "damage" && coins >= 10 && upgrades.damage < 5) {
-    player.damage++;
-    upgrades.damage++;
-    coins -= 10;
-  }
-
-  if (type === "speed" && coins >= 10 && upgrades.speed < 5) {
-    player.speed++;
-    upgrades.speed++;
-    coins -= 10;
-  }
-
-  if (type === "ammo" && coins >= 5 && upgrades.ammo < 5) {
-    player.ammo += 20;
-    upgrades.ammo++;
-    coins -= 5;
-  }
-
-  updateBars();
-};
+// GAME OVER
+function endGame() {
+    gameOver = true;
+    document.getElementById("gameOver").classList.remove("hidden");
+}
 
 });
