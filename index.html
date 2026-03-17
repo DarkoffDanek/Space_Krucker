@@ -1,3 +1,4 @@
+!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,14 +8,21 @@
 </head>
 <body>
   <div id="ui">
-    <div id="stats">HP: <span id="hp">100</span> | Coins: <span id="coins">0</span> | Ammo: <span id="ammo">50</span></div>
-    <div id="shop">
-      <h3>Улучшения</h3>
-      <button onclick="buy('damage')">Урон (10)</button>
-      <button onclick="buy('speed')">Скорость (10)</button>
-      <button onclick="buy('ammo')">Патроны (5)</button>
+    <div class="panel stats">
+      <h2>Пилот</h2>
+      <div class="stat">❤️ HP: <span id="hp">100</span></div>
+      <div class="stat">💰 Coins: <span id="coins">0</span></div>
+      <div class="stat">🔫 Ammo: <span id="ammo">50</span></div>
+    </div>
+
+    <div class="panel shop">
+      <h2>Улучшения</h2>
+      <button onclick="buy('damage')">⚡ Урон (+1)<br><span>10 монет</span></button>
+      <button onclick="buy('speed')">🚀 Скорость (+1)<br><span>10 монет</span></button>
+      <button onclick="buy('ammo')">📦 Патроны (+20)<br><span>5 монет</span></button>
     </div>
   </div>
+
   <canvas id="game"></canvas>
   <script src="game.js"></script>
 </body>
