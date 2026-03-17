@@ -1,20 +1,20 @@
-window.onload = function () {
+window.addEventListener("DOMContentLoaded", () => {
 
 const canvas = document.getElementById("game");
-
-if (!canvas) {
-  alert("Canvas не найден! Проверь id='game'");
-  return;
-}
-
 const ctx = canvas.getContext("2d");
 
-canvas.width = 600;
-canvas.height = 800;
+/* адаптив */
+function resizeCanvas() {
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
+/* игрок */
 let player = {
-  x: 280,
-  y: 700,
+  x: 200,
+  y: 400,
   w: 40,
   h: 40,
   speed: 5,
@@ -28,17 +28,36 @@ let bullets = [];
 let enemies = [];
 let coins = 0;
 
-document.addEventListener("keydown", e => {
-  keys[e.key.toLowerCase()] = true;
-});
+/* уровни прокачки */
+let upgrades = {
+  damage: 1,
+  speed: 1,
+  ammo: 1
+};
 
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-});
+/* управление */
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
+/* индикаторы */
+function updateBars() {
+  ["damage","speed","ammo"].forEach(type => {
+    const el = document.getElementById(type + "Bar");
+    el.innerHTML = "";
+
+    for (let i = 0; i < 5; i++) {
+      const d = document.createElement("div");
+      d.className = "bar " + (i < upgrades[type] ? "filled" : "");
+      el.appendChild(d);
+    }
+  });
+}
+updateBars();
+
+/* враги */
 setInterval(() => {
   enemies.push({
-    x: Math.random() * 560,
+    x: Math.random() * (canvas.width - 40),
     y: -40,
     w: 40,
     h: 40,
@@ -46,6 +65,7 @@ setInterval(() => {
   });
 }, 1000);
 
+/* обновление */
 function update() {
 
   if (keys["arrowleft"]) player.x -= player.speed;
@@ -112,6 +132,7 @@ function update() {
   }
 }
 
+/* рисование */
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -125,27 +146,35 @@ function draw() {
   enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
 }
 
+/* цикл */
 function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
 }
-
 loop();
 
+/* магазин */
 window.buy = function(type) {
-  if (type === "damage" && coins >= 10) {
+  if (type === "damage" && coins >= 10 && upgrades.damage < 5) {
     player.damage++;
+    upgrades.damage++;
     coins -= 10;
   }
-  if (type === "speed" && coins >= 10) {
+
+  if (type === "speed" && coins >= 10 && upgrades.speed < 5) {
     player.speed++;
+    upgrades.speed++;
     coins -= 10;
   }
-  if (type === "ammo" && coins >= 5) {
+
+  if (type === "ammo" && coins >= 5 && upgrades.ammo < 5) {
     player.ammo += 20;
+    upgrades.ammo++;
     coins -= 5;
   }
+
+  updateBars();
 };
 
-};
+});
