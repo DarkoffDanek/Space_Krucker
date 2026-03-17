@@ -1,39 +1,47 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Sky Game</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Sky Rogue</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="container">
 
-<div id="container">
-  
-  <div id="ui">
-    <h2>Пилот</h2>
-    <div>❤️ HP: <span id="hp">100</span></div>
-    <div>💰 Coins: <span id="coins">0</span></div>
-    <div>🔫 Ammo: <span id="ammo">50</span></div>
+    <div class="shop">
+        <h2>МАГАЗИН</h2>
 
-    <h3>Магазин</h3>
+        <div class="upgrade" data-type="damage">
+            <span>Урон</span>
+            <div class="levels"></div>
+            <button>Купить</button>
+        </div>
 
-    <div class="shop-item">
-      <button onclick="buy('damage')">Урон</button>
-      <div class="bars" id="damageBar"></div>
+        <div class="upgrade" data-type="speed">
+            <span>Скорость</span>
+            <div class="levels"></div>
+            <button>Купить</button>
+        </div>
+
+        <div class="upgrade" data-type="ammo">
+            <span>Скорострельность</span>
+            <div class="levels"></div>
+            <button>Купить</button>
+        </div>
+
+        <div class="stats">
+            <p>HP: <span id="hp">100</span></p>
+            <p>Coins: <span id="coins">0</span></p>
+        </div>
     </div>
 
-    <div class="shop-item">
-      <button onclick="buy('speed')">Скорость</button>
-      <div class="bars" id="speedBar"></div>
+    <div class="game">
+        <canvas id="gameCanvas"></canvas>
+        <div id="gameOver" class="hidden">
+            <h1>GAME OVER</h1>
+            <button onclick="location.reload()">Заново</button>
+        </div>
     </div>
-
-    <div class="shop-item">
-      <button onclick="buy('ammo')">Патроны</button>
-      <div class="bars" id="ammoBar"></div>
-    </div>
-  </div>
-
-  <canvas id="game"></canvas>
 
 </div>
 
