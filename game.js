@@ -1,4 +1,13 @@
 const canvas = document.getElementById('game');
+let bullets = [];
+let enemies = [];
+let coins = 0;
+
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
+
+function spawnEnemy(){
+  enemies.push({ x: Math.random()*560, y:-40, w:30, h:30, hp:3 });
 }
 setInterval(spawnEnemy, 1000);
 
@@ -18,7 +27,6 @@ function update(){
 
   enemies.forEach(e => e.y += 2);
 
-  // collisions
   bullets.forEach((b, bi) => {
     enemies.forEach((e, ei) => {
       if(b.x < e.x+e.w && b.x+5 > e.x && b.y < e.y+e.h && b.y+10 > e.y){
@@ -47,13 +55,13 @@ function draw(){
   ctx.fillStyle = 'black';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ctx.fillStyle = 'blue';
+  ctx.fillStyle = '#4da6ff';
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
-  ctx.fillStyle = 'yellow';
+  ctx.fillStyle = '#ffd54f';
   bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
 
-  ctx.fillStyle = 'red';
+  ctx.fillStyle = '#ff4d4d';
   enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
 }
 
