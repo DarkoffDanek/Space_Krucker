@@ -1,43 +1,19 @@
-body{
-
-margin:0;
-background:linear-gradient(180deg,#020024,#090979,#000000);
-font-family:Arial;
-color:white;
-text-align:center;
-
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial;
+  display: flex;
 }
-
-.game-container{
-
-width:820px;
-margin:auto;
-margin-top:30px;
-
+#game {
+  background: black;
 }
-
-h1{
-
-margin-bottom:10px;
-text-shadow:0 0 10px cyan;
-
+#ui {
+  width: 200px;
+  padding: 10px;
+  background: #222;
 }
-
-canvas{
-
-background:black;
-border:3px solid cyan;
-box-shadow:
-0 0 20px cyan,
-0 0 40px blue inset;
-
-border-radius:10px;
-
-}
-
-.controls{
-
-margin-top:10px;
-opacity:0.8;
-
+button {
+  width: 100%;
+  margin: 5px 0;
 }
